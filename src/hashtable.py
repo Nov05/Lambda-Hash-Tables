@@ -53,18 +53,18 @@ class HashTable:
         '''
         index = self._hash_mod(key)
         node = self.storage[index]
-        if node:
+
+        if node is None:
+            self.storage[index] = LinkedPair(key, value)
+            return
+
+        while node:
             if node.key == key:
                 node.value = value
                 return
-            while node.next: # if LinkedPair.next is not None
-                node = node.next
-                if node.key == key:
-                    node.value = value
-                    return
-            node.next = LinkedPair(key, value)
-        else:
-            self.storage[index] = LinkedPair(key, value)
+            if node.next is None:
+                node.next = LinkedPair(key, value)   
+            node = node.next
 
 
     def remove(self, key):
@@ -73,10 +73,23 @@ class HashTable:
         Print a warning if the key is not found.
         Fill this in.
         '''
-        try:
-            self.storage[self._hash_mod(key)] = None
-        except:
-            print('Hey is not found in the hash table.')
+        index = self._hash_mod(key)
+        node = self.storage[index]
+
+        if node is None:
+            print('Key is not found in the hash table.')
+            return
+
+        node_prev = None
+        while node: 
+            if node.key == key:
+                if node_prev:
+                    node_prev.next = node.next
+                else:
+                    self.storage[index] = node.next
+                return
+            node = node.next
+        print('Key is not found in the hash table.')
 
 
     def retrieve(self, key):
@@ -87,12 +100,10 @@ class HashTable:
         '''
         try:
             node = self.storage[self._hash_mod(key)]
-            if node.key == key:
-                return node.value
-            while node.next:
-                node = node.next
+            while node:
                 if node.key == key:
                     return node.value
+                node = node.next
             return None
         except:
             return None
